@@ -1,0 +1,2 @@
+# STM32F411CEU6_CMSIS_notes
+Практика по CMSIS на STM32F411CEU6
