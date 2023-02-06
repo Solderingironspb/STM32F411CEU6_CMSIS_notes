@@ -57,6 +57,16 @@ void CMSIS_Debug_init(void) {
 }
 
 void CMSIS_RCC_SystemClock_96MHz(void) {
+    /*Настройки:
+     * Входной кварцевый резонатор 25 MHz
+     * CSS Enabled
+     * SYSCLK 96 MHz
+     * AHB 96 MHz
+     * PCLK1 48 MHz
+     * PCLK2 96 MHz
+     * USB 48 MHz
+     * I2S Clock 48 MHz
+     * */
 	SET_BIT(RCC->CR, RCC_CR_HSION); //Запустим внутренний RC генератор на 16 МГц
 	while (READ_BIT(RCC->CR, RCC_CR_HSIRDY) == 0) ; //Дождемся поднятия флага о готовности
 	CLEAR_BIT(RCC->CR, RCC_CR_HSEBYP); //Просто сбросим этот бит в 0(Хотя изначально он и так должен быть в 0). 
@@ -75,11 +85,14 @@ void CMSIS_RCC_SystemClock_96MHz(void) {
 	SET_BIT(FLASH->ACR, FLASH_ACR_PRFTEN); //Prefetch is enabled
 	MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLM_Msk, 25 << RCC_PLLCFGR_PLLM_Pos); //Деление на 25
 	MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLN_Msk, 192 << RCC_PLLCFGR_PLLN_Pos); //Умножение на 192
-	MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLP_Msk, 0 << RCC_PLLCFGR_PLLP_Pos); // Без деления
+	MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLP_Msk, 0b00 << RCC_PLLCFGR_PLLP_Pos); // 00: PLLP = 2
 	SET_BIT(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC); //1: HSE oscillator clock selected as PLL and PLLI2S clock entry
 	MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLQ_Msk, 4 << RCC_PLLCFGR_PLLQ_Pos); //Деление на 4
 	SET_BIT(RCC->CR, RCC_CR_PLLON); //Запустим PLL
 	while (READ_BIT(RCC->CR, RCC_CR_PLLRDY) == 0) ; //Дождемся, пока PLL запустится
+    MODIFY_REG(RCC->PLLI2SCFGR, RCC_PLLI2SCFGR_PLLI2SM_Msk, 25 << RCC_PLLI2SCFGR_PLLI2SM_Pos); //Деление на 25
+    MODIFY_REG(RCC->PLLI2SCFGR, RCC_PLLCFGR_PLLN_Msk, 192 << RCC_PLLCFGR_PLLN_Pos); //Умножение на 192
+    MODIFY_REG(RCC->PLLI2SCFGR, RCC_PLLCFGR_PLLP_Msk, 4 << RCC_PLLCFGR_PLLP_Pos); //Деление на 4
 	SET_BIT(RCC->CR, RCC_CR_PLLI2SON); //Запустим PLL для I2S
 	while (READ_BIT(RCC->CR, RCC_CR_PLLI2SRDY) == 0) ; //Дождемся, пока PLL запустится
 	MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_CFGR_SW_PLL); //Выберем HSE в качестве System Clock(PLL лучше пока не выбирать, он у нас отключен)
